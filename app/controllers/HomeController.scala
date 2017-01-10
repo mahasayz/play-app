@@ -6,14 +6,16 @@ import models.api.{AirportResult, Report, ResultFormatter}
 import play.api.i18n._
 import play.api.libs.json.Json
 import play.api.mvc._
-import services.AirportService
+import services.{AirportService, RunwayService}
 import play.api.cache._
+
 import scala.concurrent.duration._
 
 /**
   * Created by Mahbub on 1/8/2017.
   */
 class HomeController @Inject() (airportService: AirportService,
+                                runwayService: RunwayService,
                                 cache: CacheApi,
                                 val messagesApi: MessagesApi) extends Controller with I18nSupport with ResultFormatter {
 
@@ -29,12 +31,12 @@ class HomeController @Inject() (airportService: AirportService,
 
     val start = System.currentTimeMillis()
     val top = cache.getOrElse[Seq[AirportResult]]("top"){
-      val res = airportService.fetchNAirports(orderBy = 3, order = "desc").items.map(r => AirportResult.tupled(r))
+      val res = airportService.fetchNAirports(orderBy = 3, order = "desc").items.map(r => r.copy(runways = runwayService.runwaysByCountry(r.country)))
       cache.set("top", res, 5 minutes)
       res
     }
     val bottom = cache.getOrElse[Seq[AirportResult]]("bottom"){
-      val res = airportService.fetchNAirports(orderBy = 3).items.map(r => AirportResult.tupled(r))
+      val res = airportService.fetchNAirports(orderBy = 3).items.map(r => r.copy(runways = runwayService.runwaysByCountry(r.country)))
       cache.set("bottom", res, 5 minutes)
       res
     }

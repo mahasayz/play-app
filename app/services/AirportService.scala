@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import anorm.SqlParser._
 import anorm._
-import models.api.Airport
+import models.api.{Airport, AirportResult}
 import play.api.db.DBApi
 import utils.CSVConverter
 
@@ -51,48 +51,15 @@ class AirportService @Inject() (dBApi: DBApi) extends DBService[Airport](dbApi =
     }
   }
 
-  /*def insert[T <: Runway](runway: T) = {
-    db.withConnection { implicit connection =>
-      SQL(
-        """
-          insert into runway values (
-            {id}, {airRef}, {airIdent}, {length}, {width}, {surface}, {lighted}, {closed}, {leIdent}, {leLat}, {leLong}, {leElevation}, {leHeading}, {leDisp}, {heIdent}, {heLat}, {heLong}, {heElevation}, {heHeading}, {heDisp}
-          )
-        """
-      ).on(
-        'id -> runway.id,
-        'airRef -> runway.airportRef,
-        'airIdent -> runway.airportIdent,
-        'length -> runway.lengthFt,
-        'width -> runway.widthFt,
-        'surface -> runway.surface,
-        'lighted -> runway.lighted,
-        'closed -> runway.closed,
-        'leIdent -> runway.leIdent,
-        'leLat -> runway.leLatitudeDeg,
-        'leLong -> runway.leLongitudeDeg,
-        'leElevation -> runway.leElevationFt,
-        'leHeading -> runway.leHeadingDegT,
-        'leDisp -> runway.leDisplacedThresholdFt,
-        'heIdent -> runway.heIdent,
-        'heLat -> runway.heLatitudeDeg,
-        'heLong -> runway.heLongitudeDeg,
-        'heElevation -> runway.heElevationFt,
-        'heHeading -> runway.heHeadingDegT,
-        'heDisp -> runway.heDisplacedThresholdFt
-      ).executeUpdate()
-    }
-  }*/
-
   val simpleCount = {
     get[String]("airport.isoCountry") ~
     get[String]("country.name") ~
     get[Int]("airportCount") map {
-      case code ~ name ~ count => (code, name, count)
+      case code ~ name ~ count => AirportResult(code, name, count)
     }
   }
 
-  def fetchNAirports(offset: Int = 0, limit: Int = 10, orderBy: Int = 1, order: String = "asc", filter: String = "%"): Page[(String, String, Int)] = {
+  def fetchNAirports(offset: Int = 0, limit: Int = 10, orderBy: Int = 1, order: String = "asc", filter: String = "%"): Page[AirportResult] = {
 
     db.withConnection { implicit connection =>
 
@@ -128,7 +95,8 @@ class AirportService @Inject() (dBApi: DBApi) extends DBService[Airport](dbApi =
 
   }
 
-  override protected val fsPath: String = "C:\\Users\\Mahbub\\Documents\\csv\\airports.csv"
+//  override protected val fsPath: String = "C:\\Users\\Mahbub\\Documents\\csv\\airports.csv"
+override protected val fsPath: String = "/Users/malam/dev/Learn/Scala/random-repo/src/test/resources/airports.csv"
 
   def task(list: List[String]) = Future {
     list.map(line => {

@@ -41,7 +41,7 @@ object CSVConverter {
   }
 
   implicit def intCsvConverter: CSVConverter[Int] = new CSVConverter[Int] {
-    def from(s: String): Try[Int] = Try(s.trim.size match {
+    def from(s: String): Try[Int] = Try(s.trim.length match {
       case sz: Int if sz > 0 => s.toInt
       case _ => 0
     })
@@ -49,7 +49,7 @@ object CSVConverter {
   }
 
   implicit def longCsvConverter: CSVConverter[Long] = new CSVConverter[Long] {
-    def from(s: String): Try[Long] = Try(s.trim.size match {
+    def from(s: String): Try[Long] = Try(s.trim.length match {
       case sz: Int if sz > 0 => s.toLong
       case _ => 0
     })
@@ -57,7 +57,7 @@ object CSVConverter {
   }
 
   implicit def doubleCsvConverter: CSVConverter[Double] = new CSVConverter[Double] {
-    def from(s: String): Try[Double] = Try(s.trim.size match {
+    def from(s: String): Try[Double] = Try(s.trim.length match {
       case sz: Int if sz > 0 => s.toDouble
       case _ => 0
     })
@@ -65,7 +65,10 @@ object CSVConverter {
   }
 
   implicit def boolCsvConverter: CSVConverter[Boolean] = new CSVConverter[Boolean] {
-    def from(s: String): Try[Boolean] = Try(s.toBoolean)
+    def from(s: String): Try[Boolean] = Try(s match {
+      case "1" => true
+      case "0" => false
+    })
     def to(i: Boolean): String = i.toString
   }
 

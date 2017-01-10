@@ -7,7 +7,7 @@ import anorm._
   * Created by Mahbub on 1/8/2017.
   */
 case class Runway(id: Option[Long],
-                  airportRef: Int,
+                  airportRef: Long,
                   airportIdent: String,
                   lengthFt: Int,
                   widthFt: Int,
@@ -30,7 +30,7 @@ case class Runway(id: Option[Long],
 object Runway {
   val runwayParser = {
     get[Option[Long]]("runway.id") ~
-      get[Int]("runway.airportRef") ~
+      get[Long]("runway.airportRef") ~
       get[String]("runway.airportIdent") ~
       get[Int]("runway.lengthFt") ~
       get[Int]("runway.widthFt") ~

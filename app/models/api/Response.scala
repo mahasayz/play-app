@@ -7,7 +7,7 @@ import play.api.libs.json.{JsArray, Json, Writes}
   */
 case class Result[T](isSuccess: Boolean, response: Option[T], exception: Throwable, elapse: Long)
 
-case class AirportResult(code: String, country: String, count: Int)
+case class AirportResult(code: String, country: String, count: Int, runways: List[String] = List.empty)
 
 case class Report(topAirports: Seq[AirportResult], bottomAirports: Seq[AirportResult])
 
@@ -25,7 +25,8 @@ trait ResultFormatter {
     def writes(r: AirportResult) = Json.obj(
       "isoCountry" -> r.code,
       "country" -> r.country,
-      "count" -> r.count
+      "count" -> r.count,
+      "runways" -> JsArray(r.runways.map(Json.toJson(_)))
     )
   }
 

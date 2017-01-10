@@ -37,7 +37,8 @@ class CountryService @Inject() (dBApi: DBApi) extends DBService[Country](dbApi =
     }
   }
 
-  override protected val fsPath: String = "C:\\Users\\Mahbub\\Documents\\csv\\countries.csv"
+//  override protected val fsPath: String = "C:\\Users\\Mahbub\\Documents\\csv\\countries.csv"
+  override protected val fsPath: String = "/Users/malam/dev/Learn/Scala/random-repo/src/test/resources/countries.csv"
 
   def task(list: List[String]) = Future {
     list.map(line => {
