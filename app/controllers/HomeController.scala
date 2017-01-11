@@ -24,7 +24,7 @@ class HomeController @Inject() (airportService: AirportService,
     Ok("Howdy! This server is running.")
   }
 
-  def reports = Action {
+  def reports = Action { implicit request =>
 
     val start = System.currentTimeMillis()
     val top = cache.getOrElse[Seq[AirportResult]]("top"){
@@ -38,25 +38,27 @@ class HomeController @Inject() (airportService: AirportService,
       res
     }
 
-    /*val res = models.api.Result[Report](
-      true,
-      Some(Report(top, bottom)),
-      null,
-      System.currentTimeMillis() - start
-    )
+    request.headers.toSimpleMap.get("Accept").fold(false)(h => h.contains(JSON)) match {
+      case true =>
+        val res = models.api.Result[Report](
+          true,
+          Some(Report(top, bottom)),
+          null,
+          System.currentTimeMillis() - start
+        )
+        Ok(Json.stringify(Json.toJson(res))).withHeaders(CONTENT_TYPE -> "appliction/json")
+      case false =>
+        Ok(html.report(Report(top, bottom)))
+    }
 
-//    val res = airportService.fetchNAirports(orderBy = 3, order = order)
-    Ok(Json.stringify(Json.toJson(res))).withHeaders(CONTENT_TYPE -> "appliction/json")*/
-
-    Ok(html.report(Report(top, bottom)))
   }
 
   def query(country: String) = Action {
 
     val start = System.currentTimeMillis()
-    val airports = airportService.findByCountry(country).groupBy(a => a._1.id.get)
 
     val queryResult = cache.getOrElse[Query](country) {
+      val airports = airportService.findByCountry(s"%$country%").groupBy(a => a._1.id.get)
       val airportResult = airports.mapValues(v => {
         val runways = v.map(runways => {
           val runway = runways._2.map(Response.toQueryRunway(_))

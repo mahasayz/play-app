@@ -135,7 +135,7 @@ trait ResultFormatter {
 
   implicit val queryQrites = new Writes[Query] {
     def writes(r: Query) = Json.obj(
-      "country" -> r.country,
+      "queryString" -> r.country,
       "airports" -> JsArray(r.aiports.map(Json.toJson(_)))
     )
   }
