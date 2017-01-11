@@ -2,6 +2,7 @@ package services
 
 import anorm._
 import models.api.DBModel
+import play.api.Logger
 import play.api.db.DBApi
 
 import scala.concurrent.Future
@@ -40,9 +41,9 @@ abstract class DBService [T <: DBModel] (dbApi: DBApi) {
   def insert(model: T): Int
 
   def csvToDB = {
-    println(fsPath)
+    Logger.info(fsPath)
     val lines = scala.io.Source.fromFile(fsPath, "UTF-8").getLines().drop(1).toList
-    println(s"lines = ${lines.size}")
+    Logger.info(s"lines = ${lines.size}")
     loop(lines)
   }
 

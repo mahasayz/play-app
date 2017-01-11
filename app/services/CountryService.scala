@@ -4,12 +4,12 @@ import javax.inject.Inject
 
 import anorm._
 import models.api.Country
+import play.api.Logger
 import play.api.db.DBApi
 import utils.CSVConverter
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
@@ -52,7 +52,7 @@ class CountryService @Inject() (dBApi: DBApi) extends DBService[Country](dbApi =
       res match {
         case Success(s) => insert(s)
         case Failure(e) =>
-          println(s"Exception : $e, line : $line")
+          Logger.error(s"Exception : $e, line : $line")
       }
     })
   }

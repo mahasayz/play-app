@@ -1,0 +1,72 @@
+@import models.api.Report
+@(report: Report)
+
+@main {
+
+<div class="panel panel-default">
+    <!-- Default panel contents -->
+    <div class="panel-heading" role="tab" id="headingOne">
+        <h4 class="panel-title">
+            <a role="button" data-toggle="collapse" href="#top" aria-expanded="false" aria-controls="top">
+                Countries with Top 10 Airports
+            </a>
+        </h4>
+    </div>
+    <div id="top" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+        <div class="panel-body">
+            <div class="well">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ISO Code</th>
+                            <th>Country</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for(airport <- report.topAirports) {
+                            <tr>
+                                <td>@airport.code</td>
+                                <td>@airport.country</td>
+                                <td>@airport.count</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="panel-heading" role="tab" id="headingTwo">
+        <h4 class="panel-title">
+            <a role="button" data-toggle="collapse" href="#bottom" aria-expanded="false" aria-controls="bottom">
+                Countries with Bottom 10 Airports
+            </a>
+        </h4>
+    </div>
+    <div id="bottom" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingTwo">
+        <div class="panel-body">
+            <div class="well">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ISO Code</th>
+                        <th>Country</th>
+                        <th>Count</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @for(airport <- report.bottomAirports) {
+                    <tr>
+                        <td>@airport.code</td>
+                        <td>@airport.country</td>
+                        <td>@airport.count</td>
+                    </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+}

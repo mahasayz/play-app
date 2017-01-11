@@ -5,6 +5,7 @@ import javax.inject.Inject
 import anorm.SqlParser._
 import anorm._
 import models.api.{Airport, AirportResult, Country, Runway}
+import play.api.Logger
 import play.api.db.DBApi
 import utils.CSVConverter
 
@@ -132,7 +133,7 @@ class AirportService @Inject() (dBApi: DBApi) extends DBService[Airport](dbApi =
       res match {
         case Success(s) => insert(s)
         case Failure(e) =>
-          println(s"Exception : $e, line : $line")
+          Logger.error(s"Exception : $e, line : $line")
       }
     })
   }

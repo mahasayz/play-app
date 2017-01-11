@@ -8,6 +8,7 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import services.{AirportService, RunwayService}
 import play.api.cache._
+import views._
 
 import scala.concurrent.duration._
 
@@ -37,7 +38,7 @@ class HomeController @Inject() (airportService: AirportService,
       res
     }
 
-    val res = models.api.Result[Report](
+    /*val res = models.api.Result[Report](
       true,
       Some(Report(top, bottom)),
       null,
@@ -45,7 +46,9 @@ class HomeController @Inject() (airportService: AirportService,
     )
 
 //    val res = airportService.fetchNAirports(orderBy = 3, order = order)
-    Ok(Json.stringify(Json.toJson(res))).withHeaders(CONTENT_TYPE -> "appliction/json")
+    Ok(Json.stringify(Json.toJson(res))).withHeaders(CONTENT_TYPE -> "appliction/json")*/
+
+    Ok(html.report(Report(top, bottom)))
   }
 
   def query(country: String) = Action {
