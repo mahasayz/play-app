@@ -18,6 +18,10 @@ abstract class DBService [T <: DBModel] (dbApi: DBApi) {
   /**
     * Construct the Map[String,String] needed to fill a select options set.
     */
+  implicit class StringUtils(s: String) {
+    def removeQuotes = s.replaceAll("\"", "")
+  }
+
   def selectAll[A](parser: RowParser[A], tableName: String, orderBy: String): List[A] = db.withConnection { implicit connection =>
     SQL(s"select * from $tableName order by $orderBy").as(parser *)
   }

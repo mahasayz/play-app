@@ -28,11 +28,11 @@ class CountryService @Inject() (dBApi: DBApi) extends DBService[Country](dbApi =
         """
       ).on(
         'id -> input.id,
-        'code -> input.code,
-        'name -> input.name,
-        'continent -> input.continent,
-        'wiki -> input.wikipediaLink,
-        'keywords -> input.keywords.map(_.replaceAll("~", ","))
+        'code -> input.code.removeQuotes,
+        'name -> input.name.removeQuotes,
+        'continent -> input.continent.getOrElse("").removeQuotes,
+        'wiki -> input.wikipediaLink.getOrElse("").removeQuotes,
+        'keywords -> input.keywords.map(_.replaceAll("~", ",")).getOrElse("").removeQuotes
       ).executeUpdate()
     }
   }

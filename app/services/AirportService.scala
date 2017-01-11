@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import anorm.SqlParser._
 import anorm._
-import models.api.{Airport, AirportResult}
+import models.api.{Airport, AirportResult, Country, Runway}
 import play.api.db.DBApi
 import utils.CSVConverter
 
@@ -30,23 +30,23 @@ class AirportService @Inject() (dBApi: DBApi) extends DBService[Airport](dbApi =
         """
       ).on(
         'id -> airport.id,
-        'ident -> airport.ident,
-        'type -> airport.`type`,
-        'name -> airport.name,
+        'ident -> airport.ident.removeQuotes,
+        'type -> airport.`type`.removeQuotes,
+        'name -> airport.name.removeQuotes,
         'lat -> airport.latitudeDeg,
         'long -> airport.longitudeDeg,
         'elevation -> airport.elevationFt,
-        'continent -> airport.continent,
-        'country -> airport.isoCountry,
-        'region -> airport.isoRegion,
-        'municipality -> airport.municipality,
-        'scheduledService -> airport.scheduledService,
-        'gps -> airport.gpsCode,
-        'iata -> airport.iataCode,
-        'local -> airport.localCode,
-        'homeLink -> airport.homeLink,
-        'wiki -> airport.wikipediaLink,
-        'keyword -> airport.keywords
+        'continent -> airport.continent.getOrElse("").removeQuotes,
+        'country -> airport.isoCountry.removeQuotes,
+        'region -> airport.isoRegion.getOrElse("").removeQuotes,
+        'municipality -> airport.municipality.getOrElse("").removeQuotes,
+        'scheduledService -> airport.scheduledService.getOrElse("").removeQuotes,
+        'gps -> airport.gpsCode.getOrElse("").removeQuotes,
+        'iata -> airport.iataCode.getOrElse("").removeQuotes,
+        'local -> airport.localCode.getOrElse("").removeQuotes,
+        'homeLink -> airport.homeLink.getOrElse("").removeQuotes,
+        'wiki -> airport.wikipediaLink.getOrElse("").removeQuotes,
+        'keyword -> airport.keywords.getOrElse("").removeQuotes
       ).executeUpdate()
     }
   }
@@ -96,7 +96,29 @@ class AirportService @Inject() (dBApi: DBApi) extends DBService[Airport](dbApi =
   }
 
 //  override protected val fsPath: String = "C:\\Users\\Mahbub\\Documents\\csv\\airports.csv"
-override protected val fsPath: String = "/Users/malam/dev/Learn/Scala/random-repo/src/test/resources/airports.csv"
+  override protected val fsPath: String = "/Users/malam/dev/Learn/Scala/random-repo/src/test/resources/airports.csv"
+
+  val withCountry = Airport.airportParser ~ (Runway.runwayParser ?) ~ (Country.countryParser ?) map {
+    case airport~runway~country => (airport, runway, country)
+  }
+
+  def findByCountry(country: String): List[(Airport, Option[Runway], Option[Country])] = {
+    db.withConnection { implicit connection =>
+      val airports = SQL(
+        """
+          |select * from airport
+          |inner join country on airport.isoCountry = country.code
+          |left join runway on airport.id = runway.airportRef
+          |where country.name like {country}
+          |or country.code like {country}
+        """.stripMargin
+      ).on(
+        'country -> country
+      ).as(withCountry *)
+
+      airports
+    }
+  }
 
   def task(list: List[String]) = Future {
     list.map(line => {

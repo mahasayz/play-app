@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
-import models.api.{AirportResult, Report, ResultFormatter}
+import models.api._
 import play.api.i18n._
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -18,10 +18,6 @@ class HomeController @Inject() (airportService: AirportService,
                                 runwayService: RunwayService,
                                 cache: CacheApi,
                                 val messagesApi: MessagesApi) extends Controller with I18nSupport with ResultFormatter {
-
-  case class Response(isSuccess: Boolean, response: String)
-
-
 
   def index = Action {
     Ok("Howdy! This server is running.")
@@ -50,6 +46,36 @@ class HomeController @Inject() (airportService: AirportService,
 
 //    val res = airportService.fetchNAirports(orderBy = 3, order = order)
     Ok(Json.stringify(Json.toJson(res))).withHeaders(CONTENT_TYPE -> "appliction/json")
+  }
+
+  def query(country: String) = Action {
+
+    val start = System.currentTimeMillis()
+    val airports = airportService.findByCountry(country).groupBy(a => a._1.id.get)
+
+    val queryResult = cache.getOrElse[Query](country) {
+      val airportResult = airports.mapValues(v => {
+        val runways = v.map(runways => {
+          val runway = runways._2.map(Response.toQueryRunway(_))
+          runway
+        })
+        val airport = Response.toQueryAirport(v.head._1)
+        airport.copy(runways = runways.flatten.toList)
+      }).map(_._2).toList
+      val res = Query(country, airportResult)
+      cache.set(country, res, 5 minutes)
+      res
+    }
+
+    val res = models.api.Result[Query](
+      true,
+      Some(queryResult),
+      null,
+      System.currentTimeMillis() - start
+    )
+
+    Ok(Json.stringify(Json.toJson(res))).withHeaders(CONTENT_TYPE -> "appliction/json")
+
   }
 
 }

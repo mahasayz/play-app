@@ -7,6 +7,8 @@ GET     /                           controllers.HomeController.index
 
 GET     /reports                    controllers.HomeController.reports
 
+GET     /query/:country             controllers.HomeController.query(country:String)
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
