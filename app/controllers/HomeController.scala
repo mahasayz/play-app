@@ -53,7 +53,7 @@ class HomeController @Inject() (airportService: AirportService,
 
   }
 
-  def query(country: String) = Action {
+  def query(country: String) = Action { implicit request =>
 
     val start = System.currentTimeMillis()
 
@@ -61,10 +61,10 @@ class HomeController @Inject() (airportService: AirportService,
       val airports = airportService.findByCountry(s"%$country%").groupBy(a => a._1.id.get)
       val airportResult = airports.mapValues(v => {
         val runways = v.map(runways => {
-          val runway = runways._2.map(Response.toQueryRunway(_))
+          val runway = runways._2
           runway
         })
-        val airport = Response.toQueryAirport(v.head._1)
+        val airport = QueryAirport(v.head._3.get.name, v.head._1)
         airport.copy(runways = runways.flatten.toList)
       }).map(_._2).toList
       val res = Query(country, airportResult)
@@ -72,14 +72,18 @@ class HomeController @Inject() (airportService: AirportService,
       res
     }
 
-    val res = models.api.Result[Query](
-      true,
-      Some(queryResult),
-      null,
-      System.currentTimeMillis() - start
-    )
-
-    Ok(Json.stringify(Json.toJson(res))).withHeaders(CONTENT_TYPE -> "appliction/json")
+    request.headers.toSimpleMap.get("Accept").fold(false)(h => h.contains(JSON)) match {
+      case true =>
+        val res = models.api.Result[Query](
+          true,
+          Some(queryResult),
+          null,
+          System.currentTimeMillis() - start
+        )
+        Ok(Json.stringify(Json.toJson(res))).withHeaders(CONTENT_TYPE -> "appliction/json")
+      case false =>
+        Ok(html.query(queryResult))
+    }
 
   }
 

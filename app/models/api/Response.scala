@@ -11,50 +11,10 @@ case class AirportResult(code: String, country: String, count: Int, runways: Lis
 
 case class Report(topAirports: Seq[AirportResult], bottomAirports: Seq[AirportResult])
 
-case class QueryRunway(airportIdent: String,
-                       lengthFt: Int,
-                       widthFt: Int,
-                       surface: String,
-                       lighted: Boolean,
-                       closed: Boolean,
-                       leIdent: Option[String],
-                       leLatitudeDeg: Option[Double],
-                       leLongitudeDeg: Option[Double],
-                       leElevationFt: Option[Int],
-                       leHeadingDegT: Option[Double],
-                       leDisplacedThresholdFt: Option[Int],
-                       heIdent: Option[String],
-                       heLatitudeDeg: Option[Double],
-                       heLongitudeDeg: Option[Double],
-                       heElevationFt: Option[Int],
-                       heHeadingDegT: Option[Double],
-                       heDisplacedThresholdFt: Option[Int])
+case class QueryAirport(country: String, airport: Airport,
+                        runways: List[Runway] = List.empty)
 
-case class QueryAirport(ident: String,
-                        `type`: String,
-                        name: String,
-                        latitudeDeg: Option[Double],
-                        longitudeDeg: Option[Double],
-                        elevationFt: Option[Int],
-                        continent: Option[String],
-                        isoCountry: String,
-                        isoRegion: Option[String],
-                        municipality: Option[String],
-                        scheduledService: Option[String],
-                        gpsCode: Option[String],
-                        iataCode: Option[String],
-                        localCode: Option[String],
-                        homeLink: Option[String],
-                        wikipediaLink: Option[String],
-                        keywords: Option[String],
-                        runways: List[QueryRunway]) {
-  def apply(a: Airport): QueryAirport = new QueryAirport(
-    a.ident, a.`type`, a.name, a.latitudeDeg, a.longitudeDeg, a.elevationFt, a.continent, a.isoCountry, a.isoRegion, a.municipality, a.scheduledService, a.gpsCode, a.iataCode, a.localCode, a.homeLink,
-    a.wikipediaLink, keywords, List.empty
-  )
-}
-
-case class Query(country: String, aiports: List[QueryAirport])
+case class Query(country: String, airports: List[QueryAirport])
 
 trait ResultFormatter {
 
@@ -87,8 +47,8 @@ trait ResultFormatter {
     )
   }
 
-  implicit val runwayWrites = new Writes[QueryRunway] {
-    def writes(r: QueryRunway) = Json.obj(
+  implicit val runwayWrites = new Writes[Runway] {
+    def writes(r: Runway) = Json.obj(
       "airportIdent" -> r.airportIdent.removeQuotes,
       "lengthFt" -> r.lengthFt,
       "widthFt" -> r.widthFt,
@@ -112,23 +72,24 @@ trait ResultFormatter {
 
   implicit val airportQWrites = new Writes[QueryAirport] {
     def writes(r: QueryAirport) = Json.obj(
-      "ident" -> r.ident.removeQuotes,
-      "type" -> r.`type`.removeQuotes,
-      "name" -> r.name.removeQuotes,
-      "latitudeDeg" -> r.latitudeDeg,
-      "longitudeDeg" -> r.longitudeDeg,
-      "elevationFt" -> r.elevationFt,
-      "continent" -> r.continent.getOrElse("").removeQuotes,
-      "isoCountry" -> r.isoCountry.removeQuotes,
-      "isoRegion" -> r.isoRegion.getOrElse("").removeQuotes,
-      "municipality" -> r.municipality.getOrElse("").removeQuotes,
-      "scheduledService" -> r.scheduledService.getOrElse("").removeQuotes,
-      "gpsCode" -> r.gpsCode.getOrElse("").removeQuotes,
-      "iataCode" -> r.iataCode.getOrElse("").removeQuotes,
-      "localCode" -> r.localCode.getOrElse("").removeQuotes,
-      "homeLink" -> r.homeLink.getOrElse("").removeQuotes,
-      "wikipediaLink" -> r.wikipediaLink.getOrElse("").removeQuotes,
-      "keywords" -> r.keywords.getOrElse("").removeQuotes,
+      "country" -> r.country,
+      "ident" -> r.airport.ident.removeQuotes,
+      "type" -> r.airport.`type`.removeQuotes,
+      "name" -> r.airport.name.removeQuotes,
+      "latitudeDeg" -> r.airport.latitudeDeg,
+      "longitudeDeg" -> r.airport.longitudeDeg,
+      "elevationFt" -> r.airport.elevationFt,
+      "continent" -> r.airport.continent.getOrElse("").removeQuotes,
+      "isoCountry" -> r.airport.isoCountry.removeQuotes,
+      "isoRegion" -> r.airport.isoRegion.getOrElse("").removeQuotes,
+      "municipality" -> r.airport.municipality.getOrElse("").removeQuotes,
+      "scheduledService" -> r.airport.scheduledService.getOrElse("").removeQuotes,
+      "gpsCode" -> r.airport.gpsCode.getOrElse("").removeQuotes,
+      "iataCode" -> r.airport.iataCode.getOrElse("").removeQuotes,
+      "localCode" -> r.airport.localCode.getOrElse("").removeQuotes,
+      "homeLink" -> r.airport.homeLink.getOrElse("").removeQuotes,
+      "wikipediaLink" -> r.airport.wikipediaLink.getOrElse("").removeQuotes,
+      "keywords" -> r.airport.keywords.getOrElse("").removeQuotes,
       "runways" -> JsArray(r.runways.map(Json.toJson(_)))
     )
   }
@@ -136,34 +97,7 @@ trait ResultFormatter {
   implicit val queryQrites = new Writes[Query] {
     def writes(r: Query) = Json.obj(
       "queryString" -> r.country,
-      "airports" -> JsArray(r.aiports.map(Json.toJson(_)))
+      "airports" -> JsArray(r.airports.map(Json.toJson(_)))
     )
   }
-}
-
-object Response {
-  def toQueryRunway(r: Runway): QueryRunway = QueryRunway(
-    r.airportIdent,
-    r.lengthFt,
-    r.widthFt,
-    r.surface,
-    r.lighted,
-    r.closed,
-    r.leIdent,
-    r.leLatitudeDeg,
-    r.leLongitudeDeg,
-    r.leElevationFt,
-    r.leHeadingDegT,
-    r.leDisplacedThresholdFt,
-    r.heIdent,
-    r.heLatitudeDeg,
-    r.heLongitudeDeg,
-    r.heElevationFt,
-    r.heHeadingDegT,
-    r.heDisplacedThresholdFt
-  )
-  def toQueryAirport(a: Airport): QueryAirport = QueryAirport(
-    a.ident, a.`type`, a.name, a.latitudeDeg, a.longitudeDeg, a.elevationFt, a.continent, a.isoCountry, a.isoRegion, a.municipality, a.scheduledService, a.gpsCode, a.iataCode, a.localCode, a.homeLink,
-    a.wikipediaLink, a.keywords, List.empty
-  )
 }
